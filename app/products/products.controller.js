@@ -34,7 +34,7 @@ exports.addProduct = async (req, res) => {
       id,
       subCategoryId,
       title,
-      description: JSON.parse(description), // Expecting description to be a JSON string.
+      description: JSON.parse(description),
       material,
       sizes,
       colorsCode,
