@@ -1,6 +1,7 @@
 const Product = require("./products.model");
 const SubCategory = require("../subcategories/subcategories.model");
 const { Op } = require("sequelize");
+const Color = require("../colors/colors.model");
 
 exports.addProduct = async (productData) => {
   return await Product.create(productData);
@@ -61,6 +62,39 @@ exports.searchProducts = async (searchTerm, page = 1, limit = 10) => {
     });
 
     return result;
+  } catch (error) {
+    throw error;
+  }
+};
+exports.getColorsByIds = async (colorIds) => {
+  return await Color.findAll({
+    where: {
+      id: {
+        [Op.in]: colorIds,
+      },
+    },
+  });
+};
+
+exports.getProductsWithFilters = async (
+  filterCriteria,
+  page = 1,
+  limit = 10
+) => {
+  try {
+    const offset = (page - 1) * limit;
+
+    return await Product.findAndCountAll({
+      where: filterCriteria,
+      include: [
+        {
+          model: SubCategory,
+          required: false,
+        },
+      ],
+      offset,
+      limit,
+    });
   } catch (error) {
     throw error;
   }

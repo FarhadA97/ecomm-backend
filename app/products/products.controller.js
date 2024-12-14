@@ -10,15 +10,15 @@ exports.addProduct = async (req, res) => {
       description,
       material,
       sizes,
-      colorsCode,
-      colors,
+      colorIds,
       price,
     } = req.body;
 
-    if (!id || !subCategoryId || !title || !price) {
+    if (!id || !subCategoryId || !title || !price || !colorIds) {
       return res.status(400).json({
         status: false,
-        message: "Missing required fields: id, subCategoryId, title, or price.",
+        message:
+          "Missing required fields: id, subCategoryId, title, price, or colorIds.",
       });
     }
 
@@ -37,8 +37,7 @@ exports.addProduct = async (req, res) => {
       description: JSON.parse(description),
       material,
       sizes,
-      colorsCode,
-      colors,
+      colorIds: JSON.parse(colorIds),
       price,
       images: pictureUrls,
     });
@@ -64,6 +63,7 @@ exports.getProduct = async (req, res) => {
 
     let products;
     if (id) {
+      // Fetch the product by ID, and include the associated color records
       products = await productService.findProductById(id);
     } else if (subCategoryId) {
       products = await productService.findProductsBySubCategoryId(
@@ -73,6 +73,16 @@ exports.getProduct = async (req, res) => {
       products = await productService.findProductsByCategoryId(categoryId);
     } else {
       products = await productService.getAllProducts();
+    }
+
+    // Fetch color details for each product if colorIds are provided
+    if (products) {
+      for (let product of products) {
+        if (product.colorIds && product.colorIds.length > 0) {
+          const colors = await productService.getColorsByIds(product.colorIds);
+          product.dataValues.colors = colors; // Add the color data to the product object
+        }
+      }
     }
 
     res.status(200).json({
@@ -92,11 +102,41 @@ exports.getProduct = async (req, res) => {
 
 exports.getAllProducts = async (req, res) => {
   try {
-    const { page = 1, limit = 10 } = req.query;
-    const products = await productService.getProductsPaginated(
+    const { id, subCategoryId, categoryId, page = 1, limit = 10 } = req.query;
+
+    let filterCriteria = {};
+
+    if (id) {
+      const product = await productService.findProductById(id);
+      return res.status(200).json({
+        status: true,
+        message: "Product fetched successfully",
+        product,
+      });
+    }
+
+    if (subCategoryId) {
+      filterCriteria.subCategoryId = subCategoryId;
+    }
+
+    if (categoryId) {
+      filterCriteria["$SubCategory.categoryId$"] = categoryId;
+    }
+
+    const products = await productService.getProductsWithFilters(
+      filterCriteria,
       Number(page),
       Number(limit)
     );
+
+    if (products && products.rows) {
+      for (let product of products.rows) {
+        if (product.colorIds && product.colorIds.length > 0) {
+          const colors = await productService.getColorsByIds(product.colorIds);
+          product.dataValues.colors = colors;
+        }
+      }
+    }
 
     res.status(200).json({
       status: true,
@@ -113,7 +153,7 @@ exports.getAllProducts = async (req, res) => {
     console.error(error);
     res.status(500).json({
       status: false,
-      message: "Could not fetch products",
+      message: "Failed to fetch products",
       error: error.message,
     });
   }

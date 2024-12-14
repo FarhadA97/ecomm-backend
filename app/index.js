@@ -12,6 +12,7 @@ const app = express();
 const categoryRoutes = require("./categories/categories.routes");
 const subCategoryRoutes = require("./subcategories/subcategories.routes");
 const productRoutes = require("./products/products.routes");
+const colorRoutes = require("./colors/colors.routes");
 // const driverRoutes = require("./user/driver/driver.routes");
 // const otpRoutes = require("./otp/otp.routes");
 // const vehicleRoutes = require("./vehicle/vehicle.routes");
@@ -33,6 +34,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use("/api/v2/category", categoryRoutes);
 app.use("/api/v2/subCategory", subCategoryRoutes);
 app.use("/api/v2/products", productRoutes);
+app.use("/api/v2/colors", colorRoutes);
 
 //Use All routes here
 app.get("/api/v2", (req, res) => {
@@ -48,7 +50,7 @@ app.use((req, res) => {
 
 // Sequelize Connection with DB
 sequelize
-  .sync()
+  .sync({ force: false })
   .then(() => {
     console.log("Database synchronized successfully");
   })

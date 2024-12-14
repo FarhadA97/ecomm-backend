@@ -1,8 +1,7 @@
+// products.model.js
 const sequelize = require("../../configs/db-config");
 const { DataTypes } = require("sequelize");
-
-// Import the SubCategory model for the association
-const SubCategory = require("../subcategories/subcategories.model");
+const Color = require("../colors/colors.model");
 
 const Product = sequelize.define("Product", {
   id: {
@@ -30,12 +29,8 @@ const Product = sequelize.define("Product", {
     type: DataTypes.STRING,
     defaultValue: "S / M / L / XL / 2XL / 3XL / 4XL / 5XL",
   },
-  colorsCode: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-  colors: {
-    type: DataTypes.STRING,
+  colorIds: {
+    type: DataTypes.JSON,
     allowNull: false,
   },
   price: {
