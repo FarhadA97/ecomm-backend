@@ -90,6 +90,35 @@ exports.getProduct = async (req, res) => {
   }
 };
 
+exports.getAllProducts = async (req, res) => {
+  try {
+    const { page = 1, limit = 10 } = req.query;
+    const products = await productService.getProductsPaginated(
+      Number(page),
+      Number(limit)
+    );
+
+    res.status(200).json({
+      status: true,
+      message: "Products fetched successfully",
+      data: {
+        total: products.count,
+        page: Number(page),
+        limit: Number(limit),
+        pages: Math.ceil(products.count / limit),
+        products: products.rows,
+      },
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      status: false,
+      message: "Could not fetch products",
+      error: error.message,
+    });
+  }
+};
+
 exports.updateProduct = async (req, res) => {
   try {
     const { id } = req.body;
@@ -111,7 +140,7 @@ exports.updateProduct = async (req, res) => {
     }
 
     if (req.body.description) {
-      updateData.description = JSON.parse(req.body.description); // Ensure description is parsed if sent as JSON string.
+      updateData.description = JSON.parse(req.body.description);
     }
 
     const updatedProduct = await productService.updateProduct(id, updateData);
@@ -133,6 +162,44 @@ exports.updateProduct = async (req, res) => {
     res.status(500).json({
       status: false,
       message: "Failed to update product",
+      error: error.message,
+    });
+  }
+};
+
+exports.searchProducts = async (req, res) => {
+  try {
+    const { searchTerm, page = 1, limit = 10 } = req.query;
+
+    if (!searchTerm) {
+      return res.status(400).json({
+        status: false,
+        message: "Search term is required",
+      });
+    }
+
+    const products = await productService.searchProducts(
+      searchTerm,
+      Number(page),
+      Number(limit)
+    );
+
+    res.status(200).json({
+      status: true,
+      message: "Products fetched successfully",
+      data: {
+        total: products.count,
+        page: Number(page),
+        limit: Number(limit),
+        pages: Math.ceil(products.count / limit),
+        products: products.rows,
+      },
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      status: false,
+      message: "Could not search products",
       error: error.message,
     });
   }

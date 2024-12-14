@@ -1,5 +1,6 @@
 const Product = require("./products.model");
 const SubCategory = require("../subcategories/subcategories.model");
+const { Op } = require("sequelize");
 
 exports.addProduct = async (productData) => {
   return await Product.create(productData);
@@ -25,6 +26,17 @@ exports.findProductsByCategoryId = async (categoryId) => {
 exports.getAllProducts = async () => {
   return await Product.findAll();
 };
+exports.getProductsPaginated = async (page = 1, limit = 10) => {
+  try {
+    const offset = (page - 1) * limit;
+    return await Product.findAndCountAll({
+      offset,
+      limit,
+    });
+  } catch (error) {
+    throw error;
+  }
+};
 
 exports.updateProduct = async (id, updateData) => {
   const product = await Product.findByPk(id);
@@ -32,4 +44,24 @@ exports.updateProduct = async (id, updateData) => {
     return await product.update(updateData);
   }
   return null;
+};
+
+exports.searchProducts = async (searchTerm, page = 1, limit = 10) => {
+  try {
+    const offset = (page - 1) * limit;
+
+    const result = await Product.findAndCountAll({
+      where: {
+        title: {
+          [Op.like]: `%${searchTerm}%`,
+        },
+      },
+      offset,
+      limit,
+    });
+
+    return result;
+  } catch (error) {
+    throw error;
+  }
 };

@@ -13,11 +13,14 @@ router.post(
 );
 
 router.get("/getProduct", productController.getProduct);
+router.get("/getAllProducts", productController.getAllProducts);
 
 router.put(
   "/updateProduct",
   upload.fields([{ name: "pictures", maxCount: 5 }]),
   productController.updateProduct
 );
+
+router.get("/searchProducts", productController.searchProducts);
 
 module.exports = router;

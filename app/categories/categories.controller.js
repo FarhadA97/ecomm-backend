@@ -56,11 +56,6 @@ exports.getCategory = async (req, res) => {
           .status(404)
           .json({ status: false, message: "Category not found" });
       }
-      res.status(200).json({
-        status: true,
-        message: "Category fetched successfully",
-        category,
-      });
     } else if (name) {
       category = await categoryService.findCategoryByName(name);
       if (!category) {
@@ -68,19 +63,20 @@ exports.getCategory = async (req, res) => {
           .status(404)
           .json({ status: false, message: "Category not found" });
       }
-      res.status(200).json({
-        status: true,
-        message: "Category fetched successfully",
-        category,
-      });
     } else {
       const categories = await categoryService.getAllCategories();
-      res.status(200).json({
+      return res.status(200).json({
         status: true,
         message: "Categories fetched successfully",
         categories,
       });
     }
+
+    res.status(200).json({
+      status: true,
+      message: "Category fetched successfully",
+      category,
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({

@@ -1,4 +1,5 @@
 const Category = require("../categories/categories.model");
+const SubCategory = require("../subcategories/subcategories.model");
 
 // Method to add a category
 exports.addCategory = async (categoryData) => {
@@ -12,7 +13,12 @@ exports.addCategory = async (categoryData) => {
 
 exports.findCategoryByName = async (categoryName) => {
   try {
-    return await Category.findOne({ where: { name: categoryName } });
+    return await Category.findOne({
+      where: { name: categoryName },
+      include: {
+        model: SubCategory,
+      },
+    });
   } catch (error) {
     throw error;
   }
@@ -20,7 +26,11 @@ exports.findCategoryByName = async (categoryName) => {
 
 exports.getAllCategories = async () => {
   try {
-    return await Category.findAll();
+    return await Category.findAll({
+      include: {
+        model: SubCategory,
+      },
+    });
   } catch (error) {
     throw error;
   }
@@ -28,7 +38,11 @@ exports.getAllCategories = async () => {
 
 exports.findCategoryById = async (categoryId) => {
   try {
-    return await Category.findByPk(categoryId);
+    return await Category.findByPk(categoryId, {
+      include: {
+        model: SubCategory,
+      },
+    });
   } catch (error) {
     throw error;
   }
