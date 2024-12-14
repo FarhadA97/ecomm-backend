@@ -63,7 +63,6 @@ exports.getProduct = async (req, res) => {
 
     let products;
     if (id) {
-      // Fetch the product by ID, and include the associated color records
       products = await productService.findProductById(id);
     } else if (subCategoryId) {
       products = await productService.findProductsBySubCategoryId(
@@ -75,12 +74,11 @@ exports.getProduct = async (req, res) => {
       products = await productService.getAllProducts();
     }
 
-    // Fetch color details for each product if colorIds are provided
     if (products) {
       for (let product of products) {
         if (product.colorIds && product.colorIds.length > 0) {
           const colors = await productService.getColorsByIds(product.colorIds);
-          product.dataValues.colors = colors; // Add the color data to the product object
+          product.dataValues.colors = colors;
         }
       }
     }
@@ -108,6 +106,12 @@ exports.getAllProducts = async (req, res) => {
 
     if (id) {
       const product = await productService.findProductById(id);
+
+      if (product && product.colorIds && product.colorIds.length > 0) {
+        const colors = await productService.getColorsByIds(product.colorIds);
+        product.dataValues.colors = colors;
+      }
+
       return res.status(200).json({
         status: true,
         message: "Product fetched successfully",
