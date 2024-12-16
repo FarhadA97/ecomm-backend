@@ -1,5 +1,6 @@
 const productService = require("./products.service");
 const { uploadToCloudinary } = require("../../utils");
+const subCategoryService = require("../subcategories/subcategories.service");
 
 exports.addProduct = async (req, res) => {
   try {
@@ -244,6 +245,51 @@ exports.searchProducts = async (req, res) => {
     res.status(500).json({
       status: false,
       message: "Could not search products",
+      error: error.message,
+    });
+  }
+};
+
+exports.getLandingPageProducts = async (req, res) => {
+  try {
+    const subCategories = await subCategoryService.getAllSubCategories();
+
+    if (!subCategories || subCategories.length === 0) {
+      return res.status(404).json({
+        status: false,
+        message: "No subcategories found",
+      });
+    }
+
+    const subCategoryWithProducts = await Promise.all(
+      subCategories.map(async (subCategory) => {
+        const products = await productService.getProductsWithFilters(
+          { subCategoryId: subCategory.id },
+          1,
+          2
+        );
+
+        return {
+          subCategory: {
+            id: subCategory.id,
+            name: subCategory.name,
+            picture: subCategory.picture,
+          },
+          products: products.rows,
+        };
+      })
+    );
+
+    res.status(200).json({
+      status: true,
+      message: "Landing page products fetched successfully",
+      data: subCategoryWithProducts,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      status: false,
+      message: "Failed to fetch landing page products",
       error: error.message,
     });
   }

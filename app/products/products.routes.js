@@ -22,5 +22,6 @@ router.put(
 );
 
 router.get("/searchProducts", productController.searchProducts);
+router.get("/landingPageProducts", productController.getLandingPageProducts);
 
 module.exports = router;
